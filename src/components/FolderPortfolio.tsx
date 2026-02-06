@@ -23,19 +23,83 @@ export default function FolderPortfolio() {
 
   const folderColor = "#A2DFF7"; 
 
+  const navigatePage = (direction: 'next' | 'back') => {
+  if (!selectedPage) return;
+
+  const currentIndex = PAGES.findIndex(p => p.id === selectedPage.id);
+  let nextIndex = direction === 'next' ? currentIndex + 1 : currentIndex - 1;
+
+  if (nextIndex < 0 || nextIndex >= PAGES.length) return;
+
+  // 1. 현재 페이지를 폴더로 돌려보냄
+  setSelectedPage(null);
+
+  // 2. 잠시 후, 다음(혹은 이전) 페이지의 탭을 '호버' 상태로 만듦
+  setTimeout(() => {
+    setHoveredIndex(nextIndex); // 👈 여기서 실제로 마우스를 올린 것처럼 탭이 쑥 올라옵니다.
+  }, 400); // 종이가 들어가는 시간에 맞춰 조절
+
+  // 3. 호버된 상태를 눈으로 확인시켜준 뒤, 해당 페이지를 전체화면으로 뽑아 올림
+  setTimeout(() => {
+    setSelectedPage(PAGES[nextIndex]);
+    setHoveredIndex(null); // 페이지가 열리면 호버 상태 해제
+  }, 900); // 호버 효과를 감상할 시간을 줍니다 (0.5초 정도)
+};
   return (
     <div className="relative w-full h-screen flex items-center justify-center bg-[#f5f5f7] overflow-hidden" style={{ perspective: '1500px' }}>
       
       <AnimatePresence>
         {selectedPage && (
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center"
+            key={selectedPage.id}
+            // 종이가 폴더 안(아래쪽)에서 뽑혀 나오는 설정
+            initial={{ y: 600, scale: 0.4, opacity: 0, rotateX: -30 }}
+            animate={{ y: 0, scale: 1, opacity: 1, rotateX: 0 }}
+            // 다시 폴더 안(아래쪽)으로 들어가는 설정
+            exit={{ y: 600, scale: 0.4, opacity: 0, rotateX: -30 }}
+            transition={{ 
+              type: 'spring', 
+              stiffness: 120, 
+              damping: 22,
+              duration: 0.5 
+            }}
+            className="absolute inset-0 z-[100] bg-white flex flex-col items-center justify-center shadow-2xl origin-bottom"
           >
-            <button onClick={() => { setSelectedPage(null); setIsOpen(false); }} className="absolute top-10 left-10 px-6 py-2 border border-gray-300 rounded-full hover:bg-gray-100 transition-all text-sm">
-              ← Back
+            {/* 왼쪽 Back 버튼: Home(0번 인덱스)이 아닐 때만 노출 */}
+            {PAGES.findIndex(p => p.id === selectedPage.id) > 0 && (
+              <button 
+                onClick={() => navigatePage('back')}
+                className="absolute left-10 top-1/2 -translate-y-1/2 p-6 hover:bg-gray-100 rounded-full transition-all group"
+              >
+                <span className="text-4xl group-hover:-translate-x-2 transition-transform block">←</span>
+                <span className="text-xs font-bold text-gray-400 mt-2 block uppercase tracking-widest">Prev</span>
+              </button>
+            )}
+
+            {/* 중앙 내용 영역 */}
+            <div className="flex flex-col items-center">
+              <span className="text-blue-500 font-mono mb-4">0{PAGES.findIndex(p => p.id === selectedPage.id) + 1} / 0{PAGES.length}</span>
+              <h1 className="text-8xl font-black text-gray-900">{selectedPage.label}</h1>
+            </div>
+
+            {/* 오른쪽 Next 버튼: 마지막 페이지가 아닐 때만 노출 */}
+            {PAGES.findIndex(p => p.id === selectedPage.id) < PAGES.length - 1 && (
+              <button 
+                onClick={() => navigatePage('next')}
+                className="absolute right-10 top-1/2 -translate-y-1/2 p-6 hover:bg-gray-100 rounded-full transition-all group"
+              >
+                <span className="text-4xl group-hover:translate-x-2 transition-transform block">→</span>
+                <span className="text-xs font-bold text-gray-400 mt-2 block uppercase tracking-widest">Next</span>
+              </button>
+            )}
+
+            {/* 우측 상단 Close 버튼 */}
+            <button 
+              onClick={() => setSelectedPage(null)}
+              className="absolute top-10 right-10 w-12 h-12 flex items-center justify-center rounded-full border border-gray-200 hover:bg-gray-50 transition-colors"
+            >
+              <span className="text-xl">✕</span>
             </button>
-            <h1 className="text-5xl font-bold text-gray-800">{selectedPage.label}</h1>
           </motion.div>
         )}
       </AnimatePresence>
@@ -89,7 +153,7 @@ export default function FolderPortfolio() {
                   
                   // ✅ 투명도 수정: 0.3에서 0.6으로 높여서 종이의 존재감을 살림
                   opacity: isOpen 
-                    ? (isFrontOfHovered ? 0.6 : 1) 
+                    ? (isFrontOfHovered ? 0.9 : 1) 
                     : 0,
                 }}
                 transition={{ type: 'spring', stiffness: 220, damping: 25 }}
