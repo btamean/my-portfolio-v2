@@ -108,6 +108,11 @@ export default function FolderPortfolio() {
         onClick={() => !selectedPage && setIsOpen(!isOpen)}
         className="relative w-[540px] h-[360px] cursor-pointer"
         style={{ transformStyle: 'preserve-3d' }}
+        animate={{
+          rotateY: isOpen ? 5 : 10, // 왼쪽에서 오른쪽 대각선 방향을 바라보는 각도
+          rotateX: isOpen ? 0 : 0, // 살짝 위에서 내려다보는 각도
+          scale: isOpen ? 1 : 1,   // 열릴 때 공간 확보를 위해 살짝 축소
+        }}
       >
         {/* 폴더 뒷면 */}
         <div className="absolute inset-0 rounded-2xl" style={{ backgroundColor: folderColor, transform: 'translateZ(-20px)' }}>
@@ -184,22 +189,37 @@ export default function FolderPortfolio() {
 
         {/* 폴더 앞면 */}
         <motion.div
-          animate={{ 
-            rotateX: isOpen ? (hoveredIndex !== null && hoveredIndex < 3 ? -70 : -45) : 0, 
-            z: isOpen ? 120 : 30 
-          }}
-          transition={{ type: 'spring', stiffness: 150, damping: 20 }}
-          className="absolute inset-x-0 bottom-0 h-[300px] rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden"
-          style={{ 
-            transformOrigin: 'bottom center',
-            backgroundColor: folderColor,
-            border: '1px solid rgba(0,0,0,0.1)',
-            zIndex: 60
-          }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent opacity-50" />
-          {!isOpen && <span className="text-lg font-extrabold text-gray-800/60 tracking-widest">PORTFOLIO</span>}
-        </motion.div>
+  animate={{ 
+    // ✅ 'isOpen'일 때는 시원하게 열리도록 각도를 주되 (-35~-45 정도가 적당합니다)
+    // 호버 상태(hoveredIndex)에 따른 조건문을 삭제해서 '덜컥'거림을 방지합니다.
+    rotateX: isOpen ? -40 : 0, 
+    
+    // 열렸을 때 앞면이 앞으로 나오는 위치도 고정값으로 설정합니다.
+    z: isOpen ? 180 : 50 
+  }}
+  transition={{ 
+    type: 'spring', 
+    stiffness: 120, // 조금 더 묵직하게 열리도록 stiffness 조절
+    damping: 20 
+  }}
+  className="absolute inset-x-0 bottom-0 h-[300px] rounded-2xl shadow-2xl flex items-center justify-center overflow-hidden"
+  style={{ 
+    transformOrigin: 'bottom center',
+    backgroundColor: folderColor,
+    zIndex: 100 
+  }}
+>
+  {/* 빛 반사 효과 */}
+  <div className="absolute inset-0 bg-gradient-to-r from-white/30 via-transparent to-black/10 opacity-50" />
+  
+  {/* PORTFOLIO 글자 (항상 표시) */}
+  <span 
+    className="text-xl font-black text-gray-800/40 tracking-[0.2em] select-none" 
+    style={{ transform: 'translateZ(30px)', opacity: isOpen ? 0.8 : 1 }}
+  >
+    PORTFOLIO
+  </span>
+</motion.div>
       </motion.div>
     </div>
   );
